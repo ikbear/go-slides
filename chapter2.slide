@@ -1,0 +1,234 @@
+类型系统
+
+何李石, 七牛
+helishi@qiniu.com
+
+* 大纲
+
+- 字符串
+- 数字类型
+- 数组
+- 切片
+- map
+- 指针
+- 结构体
+
+* 常量定义
+
+	const i int = 10 // 有类型
+	const (
+			i = iota // 无类型，初始值为 0，不可修改
+			s = "Hello, World"
+	)
+
+* 变量定义
+
+	var i int = 10
+	i = 20 // 可修改
+	j := 20 // 默认类型 int，验证方法 fmt.Println(j+1.1)
+
+	var x interface{} // 初始值为空值 nil
+	var p *int // 初始值为空值 nil, 
+	var x int // 初始值为空值 0
+
+* 字符串
+
+	var s string = "Hello, World"
+	s[0] = 'h' // error, 不可修改
+	fmt.Println(s[0]) // 72, 输出 Unicode
+	fmt.Println("Hello, World"[0]) // 72, 输出 Unicode
+
+* 数字类型
+
+- 无符号数: uint8, uint16, uint32, uint64
+- 有符号数: int8, int16, int32, int64
+- 浮点数: float32, float64
+- 复数: complex64, complex128
+- 其它: byte(uint8 的别名), rune(int32 的别名，用来存储 Unicode)
+rune 示例: 
+
+	var a rune = 72
+	fmt.Println(string(a)) // "H"
+		
+* 数组
+
+- 长度是类型的一部分，不可变
+	
+示例:
+
+	var a [5]int
+	fmt.Println("Length: ", len(a))
+		
+* 切片
+
+- 底层为数组，但是可变长
+- 比数组更为实用
+
+	s := make([]string, 3)
+	s[0] = "a"
+	s[1] = "b"
+	s[2] = "c"
+	fmt.Println("切片元素: ", s)
+	fmt.Println("长度: ", len(s))
+	s = append(s, "d")
+	s = append(s, "e", "f")
+	fmt.Println("Append 之后: ", s)
+
+	l = s[:5] // s[0]...s[4], 左闭右合
+	l = s[1:3] // s[1]..s[2], 左闭右合
+
+	
+* 映射 map
+
+- 一个"键-值"对
+- 关键点：注意并发读写情况，上锁
+- 不能对未初始化的 map 进行写，会抛异常（panic）
+- 对于迭代操作，每次结果可能不一致（乱序）
+
+	var m map[string]int
+	m["k1"] = 7 // 错误: assignment to entry in nil map
+
+	m := make(map[string]int) // 初始化成一个空 map: [], 可以进行读写
+	m["k1"] = 7
+	m["k2"] = 13
+	delete(m, "k2")      // 删除 "k2" 对应的值
+	v, ok := m["k2"]     // 检查 "k2" 对应的值是否存在
+	fmt.Println(m["k3"]) // 不存在的 key 默认返回空值
+
+	for k, v := range m { // 迭代的结果每次可能不一致
+		fmt.Println(k, v)
+	}
+
+* make() 内建方法只能用于创建 slice, map 和 channel 
+
+- slice, map, channel 是指向底层数据结构的引用，使用前必须被初始化
+
+* 指针
+
+- Go 有指针，但是没有指针运算。你不能 用指针变量遍历字符串的各个字节。
+- Go 指针只是一种引用。
+- 取址操作符 & 获取变量存放地址，可以赋给一个指针。
+
+* 结构体（自定义变量）
+
+* 创建自己定义的类型
+
+	type Person struc {
+		Name string
+		Age int
+		parent string
+	}
+
+	p := new(Person)
+
+	p.Name = "Lishi" // 首字母大写字段，可导出，可在其它包中进行读写
+	p.Age = "28"
+	p.parent = "He" // 首字母小写字段，不可导出，不可在其它包中进行读写
+
+* 方法定义
+
+	func (p *Person) Study(lang string) {
+		fmt.Println("Study some language...", lang)
+	}
+
+	p.Study("Golang")
+
+* 匿名字段
+
+	type S struct {
+		a string
+		b string
+	}
+
+	type B struct {
+		S       // 匿名字段，只有类型 S, 字段名是 S
+		b   int // 字段名是 b
+		int     // 匿名字段，只有类型 int, 无意义
+	}
+
+	var b B
+	b.S.a = "a" // 给匿名字段 S 赋值
+	b.a = "a"   // 同上
+
+	fmt.Println(b)
+	// 输出结果: {{a } }
+	不是{a}
+
+	type String string
+
+	b.S.b = "b" // 给匿名字段 S 赋值
+	b.b = 10    // 名字冲突，不同上，不能这样给匿名字段中的相同字段赋值
+
+* 方法继承
+
+	type S struct {
+		a, b string
+	}
+
+	type B struct {
+		S
+	}
+
+	func (s *S) String() {
+		fmt.Println("In A: ", s.a, s.b)
+	}
+
+	var b B
+	b.a = "a"
+	b.b = "b"
+
+	b.S.String()
+	b.String() // 等价于 b.S.String()
+
+
+* 方法覆盖
+
+给类型 B 添加一个方法覆盖类型 S 中的 String()
+
+	type S struct {
+		a, b string
+	}
+
+	type B struct {
+		S
+	}
+
+	func (s *S) String() {
+		fmt.Println("In A: ", s.a, s.b)
+	}
+
+	func (b *B) String() {
+		fmt.Println("In B: ", b.a, b.b)
+	}
+
+	var b B
+	b.a = "a"
+	b.b = "b"
+
+	b.S.String()
+	b.String() // 不等价于 b.S.String()
+
+* 字节对齐
+
+	type B struct {
+		a byte
+		b string
+		c byte
+	}
+
+	unsafe.Sizeof(B) => 32
+
+.image http://ikbear.qiniudn.com/byte-string-byte.png?imageView/2/w/400
+
+* 对比
+
+	type A struct {
+		a string
+		b byte
+		c byte
+	}
+
+	unsafe.Sizeof(A) => 24
+
+.image http://ikbear.qiniudn.com/string-byte-byte.png?imageView/2/w/400
+

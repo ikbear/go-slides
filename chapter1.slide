@@ -1,0 +1,232 @@
+编写第一个 Go 程序
+
+何李石 七牛
+helishi@qiniu.com
+
+* 设置工作目录 $GOPATH/src
+
+设置 $GOPATH: 
+
+	# 在 .bashrc 或类似文件中配置
+	export GOPATH=$HOME/go
+
+工作目录:
+
+	.
+	└── src
+		└── gopher
+			├── main.go
+			└── sub
+				└── sub.go
+
+
+* 引入该本地包
+
+	package main
+
+	import "gopher/sub"
+
+	func main() {
+		sub.ExportedFunction()
+	}
+
+* 引入第三方包
+
+	import "codehosting.com/path/to/package"
+
+	func main() {
+	    package.ExportedFunction()
+	}
+
+安装该包: 
+
+	go get codehosting.com/path/to/package
+
+* 多个包
+
+	$ tree -L 2 $GOPATH
+	/Users/ikbear/go
+	└── src
+	    ├── example
+	    	├── example.go
+	    ├── gopher
+	    	├── gopher.go
+	    └── testy
+	    	├── testy.go
+
+* 如何运行一个程序
+
+	$ cd $GOPATH/src/example
+	$ ls
+	main.go
+
+	$ cat main.go
+	package main
+
+	import "fmt"
+
+	func main() {
+	    fmt.Println("Hello world!")
+	}
+
+	$ go run main.go
+	Hello world!
+
+* 也可以编译执行
+
+	$ go build
+	$ ls
+	example main.go
+
+	$ ./example
+	Hello world!
+
+	$ go install
+	$ $GOPATH/bin/example
+	Hello world!
+
+* 将一个包拆分成多个文件
+
+	$ cd $GOPATH/src/example
+	$ cat helper.go
+	package main
+
+	func privateHelperFunc() int {
+	    return 25
+	}
+
+	# 在另一个文件的函数中直接调用上面定义的函数
+	$ tail -3 main.go
+	func main() {
+	    fmt.Println("函数中返回的数字是：", privateHelperFunc())
+	}
+
+* 运行 or 编译
+
+	$ go run main.go
+	# 参数错误
+	./main.go:6: undefined: privateHelperFunc
+
+	$ go run *.go
+	Hello world! My lucky number is 25
+
+	$ go build
+	$ ./example
+	Hello world! My lucky number is 25
+
+* 将一个包拆分成多个子包
+
+	$ cat math/math.go
+	package math
+
+	func Mul2(x int) int {
+	    return x * 2
+	}
+
+调用 & 运行
+
+	$ cat main.go
+	package main
+
+	import (
+	    "fmt"
+	    "example/math"  // 只导入 "math" 包没用，它和官方包名字冲突
+	)
+
+	func main() {
+	    fmt.Println("计算结果是：", math.Mul2(privateHelperFunc()))
+	}
+
+	$ go run *.go
+	计算结果是：50
+
+* 创建第三方库
+
+	$ cd $GOPATH/src/util
+	$ cat main.go   # 文件名任意
+	package util
+
+	import "math"
+
+	func Square(x float32) float32 {
+	    return x * x
+	}
+
+	func Circle(r float32) float32 {
+	    return math.Pi * r * r
+	}
+
+	func cube(x float32) float32 {
+	    return x * x * x
+	}
+
+	$ # 安装
+	$ go install
+
+生成文件: $GOPATH/pkg/<arch>/util.a
+
+* 下载第三方包
+
+	go get github.com/user/package
+
+下载并安装到本地
+
+	go get -d github.com/user/package
+
+* 编写测试
+
+* 待测试包: division.go
+
+	package division
+
+	import (
+		"errors"
+	)
+
+	func Division(a, b float64) (float64, error) {
+		if b == 0 {
+			return 0, errors.New("除数不能为0")
+		}
+
+		return a / b, nil
+	}
+
+* 测试包: division_test.go
+
+	package division
+
+	import (
+		"testing"
+	)
+
+	func Test_Division_1(t *testing.T) {
+		if i, e := Division(6, 2); i != 3 || e != nil { //try a unit test on function
+			t.Error("除法函数测试没通过") // 如果不是如预期的那么就报错
+		} else {
+			t.Log("第一个测试通过了") //记录一些你期望记录的信息
+		}
+	}
+
+	func Test_Division_2(t *testing.T) {
+		t.Error("就是不通过")
+	}
+
+
+* 目录结构
+
+	$ tree -L 2 $GOPATH
+	/Users/ikbear/go
+	└── src
+		├── division
+			├── division.go
+			├── division_test.go
+
+* 测试原则
+
+- 测试包的文件名必须以 `_test.go` 结尾，和被测试的包在同一个目录下
+- 测试包必须 `import testing` 这个包
+- 所有的测试用例函数必须是 `Test` 开头
+- 测试用例会按照源代码中写的 *顺序* 依次执行
+- 测试函数 `TestXxx()` 的参数是 `testing.T`, 可以使用该类型来记录错误或者是测试状态
+- 测试格式：func TestXxx (t *testing.T), 其中 `Xxx` 部分可以为任意的字母数字的组合，但是首字母不能是小写字母[a-z]，例如 `Testintdiv` 是错误的函数名。
+- 函数中通过调用 `testing.T` 的 `Error`, `Errorf`, `FailNow`, `Fatal`, `FatalIf` 方法说明测试不通过，调用 `Log` 方法用来记录测试的信息

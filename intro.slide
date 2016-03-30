@@ -1,0 +1,89 @@
+Go(lang)
+Intro
+
+Karol Dulęba
+Potato Dev
+
+* Outline
+1. What is Go
+2. Advantages
+3. Disadvantages
+4. Hello world
+5. How to use Go
+6. Django?
+8. Tooling
+7. Why to use Go
+
+* What is Go(lang)
+
+- Developed at Google in 2007
+- Statically-typed, syntax resembles C
+- Garbage collected
+
+* Advantages
+
+- Fast
+- Compiles to static binary
+- Great standard library
+- Promise of backward compatibility (no Py2 -> Py3)
+- Concurrent in core (easy and safe)
+- Tooling
+- Meets nearly all of "Zen of Python" criteria. [[http://talks.golang.org/2012/zen.slide][awesome presentation]]
+- *Simple*
+- *Explicit*
+
+* Disadvantages
+
+- Young
+- Different
+- *Simple*
+- Requires bit more planning
+
+* Hello world
+
+.play intro/hello_world.go
+
+* Hello world (web)
+
+.play intro/hello_web.go
+
+.link http://localhost:7000 Hello!
+
+* How to use Go
+
+- Go is not Python. To work with Go, forget what you know about Python
+- Own idioms, formatting, conventions...
+- Philosophy is more important than syntax
+- KISS and YAGNI are your best friends (no Django like tools)
+- Leverage Go's feature set. Don't try to fight it
+- Build smart stuff that is consistent with UNIX philosophy
+
+* Django?
+
+- There is no Django like tool for Go
+- There are some more or less feature full frameworks (Martini, Beego, Revel)
+- Community do not look for or approve tools that do not use standard Handler and HandlerFunc
+- Simple tools over frameworks (net/http, Gorillas, Negroni)
+
+* Tooling
+
+- go build
+- go fmt
+- go generate
+- go get
+- go test
+- go vet
+- godoc
+- gorename
+- goimports
+
+* Why to use Go
+
+* To create smart tools/apps that make job done.
+
+* Why I'll continue to use Go
+
+- Gives perspective
+- Teaches how to create simpler and more maintainable solutions
+- Let me build cool tools. Soon native mobile apps too!
+- Bottom line: Go makes me a better Python developer, obviously
